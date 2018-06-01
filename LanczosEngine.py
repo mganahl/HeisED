@@ -17,6 +17,10 @@ numeig is the number of eigenvalue-eigenvector pairs to be returned by the routi
 delta is a tolerance parameter, such that iteration stops when a vector with norm<delta
 is found.
 deltaEta is the desired eigenvalue-accuracy.
+
+RETURNS: eta,v
+         eta: list of eigenvalues, in ascending order
+         v: a list of eigenvectors
 """
 class LanczosEngine:
     def __init__(self,matvec,vecvec,zeros_initializer,Ndiag,ncv,numeig,delta,deltaEta):
