@@ -26,7 +26,7 @@ if __name__ == "__main__":
     #create the basis states, encoded as list of long unsigned int
     #basis=ed.binarybasisrecursive(N, Nup)
     print('running ED for N={0}, Nup={1}, Jz={2}, Jxy={3}'.format(N,Nup,Jz,Jxy))
-    basis=ed.binarybasis2(N, Nup)
+    basis=ed.binarybasis(N, Nup)
 
     D=len(basis)
     print('basis size: {0}'.format(D))
