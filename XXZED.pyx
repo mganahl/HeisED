@@ -1,7 +1,5 @@
 import numpy as np
-from libc.stdlib cimport malloc, free
 cimport numpy as np
-from cpython cimport array
 from scipy.special import binom
 from sys import stdout
 
