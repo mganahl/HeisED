@@ -7,16 +7,18 @@ import copy
 
 """
 This is a general purpose Lanczos-class. It performs a Lanczos tridiagonalization 
-of a Hamiltonian, defined by the matrix-vector product matvec. matvec has to take
-an object "vector" and return matvec(vector). vector can be any ndarray (vector or tensor).
-Ndiag is the iteration step at which diagonalization of the tridiagonal Hamiltonian 
-should be done, e.g. Ndiag=4 means every 4 steps the tridiagonal Hamiltonian is diagonalized
-and it is checked if the eigenvalues are sufficiently converged.
-nmax is the maximum number of steps
-numeig is the number of eigenvalue-eigenvector pairs to be returned by the routine
-delta is a tolerance parameter, such that iteration stops when a vector with norm<delta
-is found.
-deltaEta is the desired eigenvalue-accuracy.
+of a Hamiltonian, defined by the matrix-vector product matvec. 
+matvec: python function performing matrix-vector multiplication (e.g. np.dot)
+vecvec: python function performing vector-vector dot product (e.g. np.dot)
+zeros_initializer: python function which returns a vector filled with zeros  (e.g. np.zeros)
+Ndiag: iteration step at which diagonalization of the tridiagonal Hamiltonian 
+       should be done, e.g. Ndiag=4 means every 4 steps the tridiagonal Hamiltonian is diagonalized
+       and it is checked if the eigenvalues are sufficiently converged (see deltaEta)
+ncv: maximum number of steps 
+numeig: number of eigenvalue-eigenvector pairs to be returned by the routine
+delta: tolerance parameter, such that iteration stops when a vector with norm<delta
+       is encountered
+deltaEta: the desired eigenvalue-accuracy.
 
 RETURNS: eta,v
          eta: list of eigenvalues, in ascending order
