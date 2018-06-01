@@ -60,7 +60,7 @@ def binarybasisrecursive(int N,int Nup):
 
 
 """
-flips a bit at position pos; b has to be an unsigned integer of 32 bit! (i.e. np.uint32)
+flips a bit at position pos; b has to be an unsigned integer of 64 bit! (i.e. np.uint64)
 """
 cdef long unsigned int flipBit(unsigned long int b,unsigned int pos):
     cdef long unsigned int mask
@@ -72,7 +72,7 @@ cdef long unsigned int flipBit(unsigned long int b,unsigned int pos):
         return b&(~mask)
 
 """
-sets a bit at position pos; b has to be an unsigned integer of 32 bit! (i.e. np.uint32)
+sets a bit at position pos; b has to be an unsigned integer of 64 bit! (i.e. np.uint64)
 """
 cdef long unsigned int setBit(long unsigned int b, unsigned int  pos):
     cdef long unsigned int mask
