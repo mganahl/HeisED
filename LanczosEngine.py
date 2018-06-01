@@ -20,9 +20,11 @@ delta: tolerance parameter, such that iteration stops when a vector with norm<de
        is encountered
 deltaEta: the desired eigenvalue-accuracy.
 
-RETURNS: eta,v
+RETURNS: eta,v,converged
          eta: list of eigenvalues, in ascending order
          v: a list of eigenvectors
+         converged: bool; if True, lanczos did converge to desired accuracy within the specified number of iterations ncv.
+                          if False, it didn't converge
 """
 class LanczosEngine:
     def __init__(self,matvec,vecvec,zeros_initializer,Ndiag,ncv,numeig,delta,deltaEta):
