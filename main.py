@@ -62,6 +62,6 @@ if __name__ == "__main__":
             return mat.dot(vec)
         mv=fct.partial(matvec,*[Hsparse])
         lan=lanEn.LanczosEngine(mv,np.dot,np.zeros,Ndiag=10,ncv=500,numeig=10,delta=1E-8,deltaEta=1E-10)
-        el,vl=lan.__simulate__(np.random.rand(D),verbose=False)
+        el,vl,conv=lan.__simulate__(np.random.rand(D),verbose=False)
         print('lowest energies:')
         print(el)

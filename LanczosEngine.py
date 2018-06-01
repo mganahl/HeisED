@@ -94,5 +94,5 @@ class LanczosEngine:
             for n1 in range(len(self._vecs)):
                 state+=self._vecs[n1]*u[n1,n2]
             states.append(state/np.sqrt(self._dot(state.conjugate(),state)))
-        return eta[0:min(self._numeig,len(eta))],states
+        return eta[0:min(self._numeig,len(eta))],states,converged
                 
