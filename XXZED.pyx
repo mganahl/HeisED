@@ -6,8 +6,13 @@ from sys import stdout
 ctypedef np.uint64_t ITYPE_t
 ctypedef np.float64_t DTYPE_t
 
-
-def binarybasis2(N, N_up):
+"""
+generate a list of uint64 representing the basis states for an N-site spin 1/2 
+system, with Nup up spins and N-Nup down spins.
+returns: a list of uint64. the binary representation of each number corresponds to
+a spin configuration
+"""
+def binarybasis(N, N_up):
     cdef int dim = int(binom(N, N_up))
     cdef long unsigned int count
     cdef int k
@@ -31,8 +36,13 @@ def binarybasis2(N, N_up):
     return basis
 
 
-
-def binarybasis(int N,int Nup):
+"""
+generate a list of uint64 representing the basis states for an N-site spin 1/2 
+system, with Nup up spins and N-Nup down spins. Uses recursive function call
+returns: a list of uint64. the binary representation of each number corresponds to
+a spin configuration
+"""
+def binarybasisrecursive(int N,int Nup):
     cdef int p
     cdef list basis=[]
     cdef list init=[np.uint64(0)]
