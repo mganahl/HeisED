@@ -15,7 +15,7 @@ Ndiag: iteration step at which diagonalization of the tridiagonal Hamiltonian
        should be done, e.g. Ndiag=4 means every 4 steps the tridiagonal Hamiltonian is diagonalized
        and it is checked if the eigenvalues are sufficiently converged (see deltaEta)
 ncv: maximum number of steps 
-numeig: number of eigenvalue-eigenvector pairs to be returned by the routine
+numeig: number of eigenvalue-eigenvector pairs to be returned by the routine (currently only the ground state can be calculated)
 delta: tolerance parameter, such that iteration stops when a vector with norm<delta
        is encountered
 deltaEta: the desired eigenvalue-accuracy.
@@ -31,7 +31,11 @@ class LanczosEngine:
         assert(ncv>=numeig)
         self._Ndiag=Ndiag
         self._ncv=ncv
-        self._numeig=numeig
+        if numeig>1:
+            warnings.warn('LanczosEngine: numeig>1 detected; LanczosEngine does not yet support computation of excited states; resetting to numeig=1')
+            self._numeig=1
+        else:
+            self._numeig=numeig
         self._delta=delta
         self._deltaEta=deltaEta
         self._matvec=matvec
