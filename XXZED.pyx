@@ -2,6 +2,9 @@ import numpy as np
 cimport numpy as np
 from scipy.special import binom
 from sys import stdout
+from libcpp.map cimport map
+import time
+
 
 ctypedef np.uint64_t ITYPE_t
 ctypedef np.float64_t DTYPE_t
@@ -21,7 +24,6 @@ def binarybasis(N, N_up):
     if N_up == 0: 
         basis[0]=np.uint64(0)
         return basis
-
     '''
     generate the initial state by setting the first N_up bits to 1:
     '''
@@ -29,10 +31,8 @@ def binarybasis(N, N_up):
     for k in range(N_up):
         state=setBit(state,k)
     count = 0
-    while state!= (2**N-1)-(2**N_up-1):
-
+    while state!= (2**N-1)-(2**(N-N_up)-1):
         basis[count] = state
-        
         '''
         make the smalles possible increase: find the first non-zero bit that can be shifted forward by one site. let n be the site of this bit, then
         shift it from n to n+1. after that, take all non-zero bits at position n'<n and move them all back to the beginning
@@ -142,24 +142,31 @@ nondiagindx,nondiagindy: a list x- and y-indices of the non-zero values form the
 
 """
 def XXZGrid(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int N,basis,grid):
-    num2ind={}
     cdef long unsigned int state,newstate
-    cdef int n,N0,s,p,nei
+    cdef N0,s,p,nei
+    cdef long unsigned int n
     cdef float sz,szsz
+    cdef map[long unsigned int,long unsigned int] num2ind
     for n in range(len(basis)):
         num2ind[basis[n]]=n
+    
     cdef np.ndarray[DTYPE_t, ndim=2] Jp=Jxy/2.0
     cdef list diag=[]
     cdef list inddiag=[]
     cdef list nondiag=[]
     cdef list nondiagindx=[]
     cdef list nondiagindy=[]
-    N0=len(basis)
-    for n in range(len(basis)):
+    N0=num2ind.size()
+    del basis
+    t0=time.time()
+    for it in num2ind:
+        n=it.second
         if n%10000==0:
-            stdout.write("\r building Hamiltonian ... finished %2.2f percent" %(100.0*n/N0))
+            stdout.write("\r building Hamiltonian ... finished %2.2f percent, 10000 iterations took %2.4f seconds" %(100.0*n/N0,time.time()-t0))
+            t0=time.time()
             stdout.flush()
-        state=basis[n]
+        
+        state=it.first
         szsz=0
         for s in range(N):
             sz=(getBit(state,s)-0.5)*2
@@ -181,6 +188,7 @@ def XXZGrid(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int N
     stdout.flush()
     print()
     return inddiag,diag,nondiagindx,nondiagindy,nondiag
+
 
 def testbinops(unsigned long int b,int pos):
     print(bin(~b))
