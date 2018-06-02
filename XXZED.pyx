@@ -14,25 +14,48 @@ a spin configuration
 """
 def binarybasis(N, N_up):
     cdef int dim = int(binom(N, N_up))
-    cdef long unsigned int count
-    cdef int k
+    cdef long unsigned int count,state
+    cdef int k,nleft,p
 
     cdef np.ndarray[ITYPE_t, ndim=1] basis = np.empty([dim],dtype=np.uint64)
     if N_up == 0: 
         basis[0]=np.uint64(0)
         return basis
-    
-    cdef np.ndarray[ITYPE_t, ndim=1] v = np.arange(N_up,dtype=np.uint64)
+
+    '''
+    generate the initial state by setting the first N_up bits to 1:
+    '''
+    state=0
+    for k in range(N_up):
+        state=setBit(state,k)
     count = 0
-    while v[N_up-1] < N:
-        state = sum(2**v)
-        basis[count] = np.uint64(state)
-        v[0] = v[0] + 1
-        for k in range(1,N_up):
-          if v[k]==v[k-1]:
-            v[k-1] = k-1
-            v[k] = v[k] + 1
+    while state!= (2**N-1)-(2**N_up-1):
+
+        basis[count] = state
+        
+        '''
+        make the smalles possible increase: find the first non-zero bit that can be shifted forward by one site. let n be the site of this bit, then
+        shift it from n to n+1. after that, take all non-zero bits at position n'<n and move them all back to the beginning
+        '''
+        k=0
+        nleft=0
+        while True:
+            if (getBit(state,k)==1):
+                if (getBit(state,k+1)==1):
+                    nleft+=1
+                elif (getBit(state,k+1)==0):		    
+                    break
+            k+=1
+        state=setBit(state,k+1)
+        for p in range(nleft):
+            state=setBit(state,p)
+        for p in range(nleft,k+1):
+            state=unsetBit(state,p)
         count = count + 1
+    '''
+    don't forget to add the last state
+    '''
+    basis[count]=state
     return basis
 
 
@@ -41,20 +64,21 @@ generate a list of uint64 representing the basis states for an N-site spin 1/2
 system, with Nup up spins and N-Nup down spins. Uses recursive function call
 returns: a list of uint64. the binary representation of each number corresponds to
 a spin configuration
+np.uint64(n+2**p))
 """
 def binarybasisrecursive(int N,int Nup):
     cdef int p
     cdef list basis=[]
     cdef list init=[np.uint64(0)]
     cdef list rest
-
+    cdef long unsigned int n
     if Nup==0:
         return init
     else:
         for p in range(Nup-1,N):
-            rest=binarybasis(p,Nup-1)
+            rest=binarybasisrecursive(p,Nup-1)
             for n in rest:
-                basis.append(np.uint64(n+2**p))
+                basis.append(n+setBit(0,p))
         return basis
 
 
@@ -79,6 +103,16 @@ cdef long unsigned int setBit(long unsigned int b, unsigned int  pos):
     cdef long unsigned int a=1
     mask=a<<pos
     return mask|b
+
+
+"""
+sets a bit at position pos; b has to be an unsigned integer of 64 bit! (i.e. np.uint64)
+"""
+cdef long unsigned int unsetBit(long unsigned int b, unsigned int  pos):
+    cdef long unsigned int mask
+    cdef long unsigned int a=1
+    mask=a<<pos
+    return (~mask)&b
 
 cdef int getBit(unsigned long int  b,unsigned int pos):
     cdef long unsigned int mask
@@ -110,7 +144,7 @@ nondiagindx,nondiagindy: a list x- and y-indices of the non-zero values form the
 def XXZGrid(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int N,basis,grid):
     num2ind={}
     cdef long unsigned int state,newstate
-    cdef int n,N0,s
+    cdef int n,N0,s,p,nei
     cdef float sz,szsz
     for n in range(len(basis)):
         num2ind[basis[n]]=n
