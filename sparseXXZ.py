@@ -5,6 +5,10 @@ from lib.utis.binaryoperations import getBit,flipBit
 from scipy.sparse import csc_matrix
 
 """
+
+                              This is pure python code and serves for testing only
+
+
 calculates all non-zero matrix elements of the XXZ Hamiltonian on a grid "grid" with interactions
 Jz and Jxy and for total number of N spins. "basis" is a list of unit64 numbers encoding the basis-states
 

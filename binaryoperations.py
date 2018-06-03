@@ -1,4 +1,10 @@
 import numpy as np
+
+
+"""
+                              This is pure python code and serves for testing only
+"""
+
 """
 flips a bit at position pos; b has to be an unsigned integer of 64 bit! (i.e. np.uint64)
 """
