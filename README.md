@@ -6,7 +6,6 @@ The code uses total Sz and Z2 conservation to reduce Hilbertspace dimension. mai
 currently runs diagonalization on a 1d XXZ chain for either open or periodic boundary conditions;
 run python main.py --h for a list of parameters
 
-
 To build .so files, run python setup.py built_ext --inplace
 
-
+Tested for python2.7.12 (numpy 1.12.1,scipy 0.19.0) and python3.5.2 (numpy 1.14.3, scipy 0.19.0)
