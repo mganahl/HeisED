@@ -62,8 +62,6 @@ if __name__ == "__main__":
             
         Jxyar,Jzar=np.asarray(Jxyar).astype(np.float64),np.asarray(Jzar).astype(np.float64)
         t0=time.time()
-        #basis=ed.binarybasisU1(N,Nup)
-        #Hsparse=ed.XXZU1(Jxyar,Jzar,N,basis,grid)
         Hsparse=ed.XXZSparseHam(Jxyar,Jzar,N,Nup,Z2,grid)
         
         if args.save!=None:
