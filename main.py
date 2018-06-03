@@ -23,6 +23,7 @@ if __name__ == "__main__":
     parser.add_argument('--Z2',help='Z2 symmetry; use (-1),1 for (anti)-symmetric ground-states; Z2!=-1 or Z2!=1 uses no Z2 symmetry (more costly) (-1)',type=int,default=-1)    
     parser.add_argument('--LAN', help='use lanczos',action='store_true')
     parser.add_argument('--AR', help='use arnoldi',action='store_true')
+    parser.add_argument('--pbc', help='use arnoldi',action='store_true')
     parser.add_argument('--save', help='save sparse Hamiltonian',type=str,default=None)    
     parser.add_argument('--Jxy',help='',type=float,default=1.0)
     parser.add_argument('--Jz',help='',type=float,default=1.0)
@@ -39,6 +40,7 @@ if __name__ == "__main__":
         if args.save!=None:
             filename=args.save+'XXZsparseN{0}Nup{1}Jz{2}Jxy{3}'.format(N,Nup,Jz,Jxy)
         print('###########################    running ED for N={0}, Nup={1}, Jz={2}, Jxy={3}   #############################'.format(N,Nup,Jz,Jxy))
+            
         #grid: a list of length N; grid[n] is a list of neighbors of spin n
         grid=[None]*N
         #Jzar,Jxyar: a list of length N; Jz[n] and Jxy[n] is an array of the interaction and hopping parameters of all neighbors of spin n,
@@ -49,9 +51,15 @@ if __name__ == "__main__":
             grid[n]=[n+1]
             Jzar[n]=np.asarray([Jz])
             Jxyar[n]=np.asarray([Jxy])
-        grid[N-1]=[]
-        Jzar[N-1]=np.asarray([0.0])
-        Jxyar[N-1]=np.asarray([0.0])
+        if args.pbc:
+            grid[N-1]=[0]
+            Jzar[N-1]=np.asarray([1.0])
+            Jxyar[N-1]=np.asarray([1.0])
+        else:
+            grid[N-1]=[]
+            Jzar[N-1]=np.asarray([0.0])
+            Jxyar[N-1]=np.asarray([0.0])
+            
         Jxyar,Jzar=np.asarray(Jxyar).astype(np.float64),np.asarray(Jzar).astype(np.float64)
         t0=time.time()
         #basis=ed.binarybasisU1(N,Nup)

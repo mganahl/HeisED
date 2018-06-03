@@ -350,7 +350,7 @@ cdef XXZU1(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int N,
     for it in num2ind:
         n=it.second
         if n%100000==0:
-            stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent, 100000 iterations took %2.4f seconds" %(100.0*n/N0,time.time()-t0))
+            stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent, 100000 states took %2.4f seconds" %(100.0*n/N0,time.time()-t0))
             t0=time.time()
             stdout.flush()
         
@@ -372,11 +372,12 @@ cdef XXZU1(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int N,
                     nondiagindx.append(num2ind[newstate])
                     nondiagindy.append(n)
                     nondiag.append(Jp[s,p])
+    print('')		    
     stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent" %(100.0*n/N0))
     stdout.flush()
 
 
-    print()
+    print('')
     return inddiag,diag,nondiagindx,nondiagindy,nondiag
 
 
@@ -432,7 +433,7 @@ cdef XXZU1Z2(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int 
     for it in num2ind:
         n=it.second
         if n%100000==0:
-            stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent, 100000 iterations took %2.4f seconds" %(100.0*n/N0,time.time()-t0))
+            stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent, 100000 states took %2.4f seconds" %(100.0*n/N0,time.time()-t0))
             t0=time.time()
             stdout.flush()
         
@@ -473,10 +474,10 @@ cdef XXZU1Z2(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int 
             else:
                 sys.exit('found a state that is not contained in the Hilbert-space')
             stateset.erase(setit)                        
-
+    print('')		    
     stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent" %(100.0*n/N0))
     stdout.flush()
-    print()
+    print('')
     return inddiag,diag,nondiagindx,nondiagindy,nondiag    
 
 
@@ -484,7 +485,7 @@ cdef XXZU1Z2(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int 
 def XXZSparseHam(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int N,int Nup,int Z2,grid):
     cdef vector[long unsigned int] basis
     cdef long unsigned int dim
-    if (Z2==1) or (Z2==-1):
+    if ((Z2==1) or (Z2==-1)) and (Nup*2==N):
         print('                            doing Z2 symmetric diagonalization for Z2={0}, N={1}, Nup={2}                         '.format(Z2,N,Nup))        
         t1=time.time()
         binarybasisU1Z2_(N,basis)
@@ -493,7 +494,9 @@ def XXZSparseHam(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,
         dim=basis.size()
         t3=time.time()            
         inddiag,diag,nondiagindx,nondiagindy,nondiag=XXZU1Z2(Jxy,Jz,N,Z2,basis,grid)
+        print('generating csc_matrix ...')
         Hsparse=csc_matrix((diag,(inddiag,inddiag)),shape=(dim,dim))+csc_matrix((nondiag,(nondiagindx,nondiagindy)),shape=(dim,dim))
+        print('done')
         t4=time.time()
         print('calculating sparse Hamiltonian took {0} seconds'.format(t4-t3))
         return Hsparse
@@ -506,7 +509,9 @@ def XXZSparseHam(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,
         dim=basis.size()        
         t3=time.time()    
         inddiag,diag,nondiagindx,nondiagindy,nondiag=XXZU1(Jxy,Jz,N,basis,grid)
+        print('generating csc_matrix ...')
         Hsparse=csc_matrix((diag,(inddiag,inddiag)),shape=(dim,dim))+csc_matrix((nondiag,(nondiagindx,nondiagindy)),shape=(dim,dim))
+        print('done')
         t4=time.time()
         print('calculating sparse Hamiltonian took {0} seconds'.format(t4-t3))
         return Hsparse
