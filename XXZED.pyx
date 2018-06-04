@@ -21,6 +21,57 @@ ctypedef np.float64_t DTYPE_t
 
 
 
+"""
+generate a list of uint64 representing the U1 and Z2 symmetric basis states for an N-site spin 1/2 
+system, with Nup up spins and N-Nup down spins.
+returns: a list of uint64. the binary representation of each number corresponds to
+a spin configuration; entries of returned list are sorted in ascending order
+
+"""
+cdef binarybasisU1Z2TI_(int N,vector[long unsigned int]& basis):
+    cdef int N_up=int(N/2)
+    cdef int dim
+    dim = int(binom(N, N_up)/2)
+    cdef long unsigned int count,state
+    cdef int k,nleft,p
+    basis.resize(dim)
+    #cdef np.ndarray[ITYPE_t, ndim=1] basis = np.empty([dim],dtype=np.uint64)
+    if N_up == 0: 
+        basis[0]=np.uint64(0)
+        return basis
+    '''
+    generate the initial state by setting the first N_up bits to 1:
+    '''
+    state=0
+    for k in range(N_up):
+        state=setBit(state,k)
+    count = 0
+    '''state!= (2**N-1)-(2**(N-N_up)-1):'''
+    while count<(dim-1):
+        basis[count] = state
+        '''
+        make the smalles possible increase: find the first non-zero bit that can be shifted forward by one site. let n be the site of this bit, then
+        shift it from n to n+1. after that, take all non-zero bits at position n'<n and move them all back to the beginning
+        '''
+        k=0
+        nleft=0
+        while True:
+            if (getBit(state,k)==1):
+                if (getBit(state,k+1)==1):
+                    nleft+=1
+                elif (getBit(state,k+1)==0):		    
+                    break
+            k+=1
+        state=setBit(state,k+1)
+        for p in range(nleft):
+            state=setBit(state,p)
+        for p in range(nleft,k+1):
+            state=unsetBit(state,p)
+        count = count + 1
+    '''
+    don't forget to add the last state
+    '''
+    basis[count]=state
 
 
 
@@ -373,7 +424,7 @@ cdef XXZU1(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int N,
                     nondiagindy.append(n)
                     nondiag.append(Jp[s,p])
     print('')		    
-    stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent" %(100.0*n/N0))
+    stdout.write("\rfinished building Hamiltonian")
     stdout.flush()
 
 
@@ -475,7 +526,7 @@ cdef XXZU1Z2(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,int 
                 sys.exit('found a state that is not contained in the Hilbert-space')
             stateset.erase(setit)                        
     print('')		    
-    stdout.write("\rbuilding Hamiltonian ... finished %2.2f percent" %(100.0*n/N0))
+    stdout.write("\rfinished building Hamiltonian")    
     stdout.flush()
     print('')
     return inddiag,diag,nondiagindx,nondiagindy,nondiag    
@@ -494,9 +545,12 @@ def XXZSparseHam(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,
         dim=basis.size()
         t3=time.time()            
         inddiag,diag,nondiagindx,nondiagindy,nondiag=XXZU1Z2(Jxy,Jz,N,Z2,basis,grid)
-        print('generating csc_matrix ...')
-        Hsparse=csc_matrix((diag,(inddiag,inddiag)),shape=(dim,dim))+csc_matrix((nondiag,(nondiagindx,nondiagindy)),shape=(dim,dim))
-        print('done')
+        stdout.write("\rgenerating csc_matrix, be patient with me ...")
+        stdout.flush()	
+        Hsparse=csc_matrix((diag,(inddiag,inddiag)),shape=(dim,dim))+csc_matrix((nondiag,(nondiagindx,nondiagindy)),shape=(dim,dim))	
+        stdout.write("\rgenerating csc_matrix, be patient with me ... done")
+        stdout.flush()
+        print('')
         t4=time.time()
         print('calculating sparse Hamiltonian took {0} seconds'.format(t4-t3))
         return Hsparse
@@ -509,9 +563,12 @@ def XXZSparseHam(np.ndarray[DTYPE_t, ndim=2] Jxy,np.ndarray[DTYPE_t, ndim=2] Jz,
         dim=basis.size()        
         t3=time.time()    
         inddiag,diag,nondiagindx,nondiagindy,nondiag=XXZU1(Jxy,Jz,N,basis,grid)
-        print('generating csc_matrix ...')
+        stdout.write("\rgenerating csc_matrix, be patient with me ...")
+        stdout.flush()	
         Hsparse=csc_matrix((diag,(inddiag,inddiag)),shape=(dim,dim))+csc_matrix((nondiag,(nondiagindx,nondiagindy)),shape=(dim,dim))
-        print('done')
+        stdout.write("\rgenerating csc_matrix, be patient with me ... done")
+        stdout.flush()
+        print('')
         t4=time.time()
         print('calculating sparse Hamiltonian took {0} seconds'.format(t4-t3))
         return Hsparse

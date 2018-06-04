@@ -3,7 +3,7 @@ import functools as fct
 import numpy as np
 import XXZED as ed
 import scipy as sp
-import time
+import time,sys
 import LanczosEngine as lanEn
 import argparse
 comm=lambda x,y:np.dot(x,y)-np.dot(y,x)
@@ -21,12 +21,12 @@ if __name__ == "__main__":
     parser.add_argument('--N',help='Number of sites (10)',type=int,default=10)
     parser.add_argument('--Nup',help='Number of up-spins (5)',type=int,default=5)    
     parser.add_argument('--Z2',help='Z2 symmetry; use (-1),1 for (anti)-symmetric ground-states; Z2!=-1 or Z2!=1 uses no Z2 symmetry (more costly) (-1)',type=int,default=-1)    
-    parser.add_argument('--LAN', help='use lanczos',action='store_true')
-    parser.add_argument('--AR', help='use arnoldi',action='store_true')
-    parser.add_argument('--pbc', help='use arnoldi',action='store_true')
-    parser.add_argument('--save', help='save sparse Hamiltonian',type=str,default=None)    
-    parser.add_argument('--Jxy',help='',type=float,default=1.0)
-    parser.add_argument('--Jz',help='',type=float,default=1.0)
+    parser.add_argument('--LAN', help='use lanczos (False)',action='store_true' )
+    parser.add_argument('--AR', help='use arnoldi (False)',action='store_true')
+    parser.add_argument('--pbc', help='boundadry condition (False)',action='store_true')
+    parser.add_argument('--save', help='save sparse Hamiltonian (not stored)',type=str,default=None)    
+    parser.add_argument('--Jxy',help='Jxy coupling (1.0)',type=float,default=1.0)
+    parser.add_argument('--Jz',help='Jz couplong (1.0)',type=float,default=1.0)
     args=parser.parse_args()    
     N=args.N #system size
     Nup=args.Nup #number of up-spins
@@ -35,7 +35,14 @@ if __name__ == "__main__":
     Z2=args.Z2
     LAN=args.LAN
     AR=args.AR
-    assert(not ((LAN==True) and (AR==True)))
+    if (LAN==True) and (AR==True):
+        print('--LAN and --AR are set; unset one of them')
+        sys.exit()
+    if (LAN==False) and (AR==False):
+        print('no solver flag set; use --LAN or --AR')
+        sys.exit()
+
+        
     if not ((args.LAN==False) and (args.AR==False) and (args.save==None)):
         if args.save!=None:
             filename=args.save+'XXZsparseN{0}Nup{1}Jz{2}Jxy{3}'.format(N,Nup,Jz,Jxy)
@@ -75,7 +82,7 @@ if __name__ == "__main__":
             def matvec(mat,vec):
                 return mat.dot(vec)
             mv=fct.partial(matvec,*[Hsparse])
-            lan=lanEn.LanczosEngine(mv,np.dot,np.zeros,Ndiag=10,ncv=500,numeig=10,delta=1E-8,deltaEta=1E-10)
+            lan=lanEn.LanczosEngine(mv,np.dot,np.zeros,Ndiag=10,ncv=500,numeig=1,delta=1E-8,deltaEta=1E-10)
             e,v,conv=lan.__simulate__(np.random.rand(Hsparse.shape[1]),verbose=False)
             t2=time.time()
         if (AR==True) or (LAN==True):        
@@ -86,6 +93,4 @@ if __name__ == "__main__":
             print('sparse Hamiltonian has been stored to disc in {0}.npz'.format(filename))
         print('lowest energies:')
         print(e)
-    else:
-        print('nothing to do; please enter or change some input parameters')
     
