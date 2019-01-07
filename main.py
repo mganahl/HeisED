@@ -3,6 +3,7 @@ import functools as fct
 import numpy as np
 import XXZED as ed
 import scipy as sp
+from scipy.sparse.linalg import eigsh
 import time,sys
 import LanczosEngine as lanEn
 import argparse
@@ -75,7 +76,7 @@ if __name__ == "__main__":
             sp.sparse.save_npz(filename,Hsparse)
         t1=time.time()
         if AR==True:
-            e,v=sp.sparse.linalg.eigsh(Hsparse,k=2,which='SA',maxiter=1000000,tol=1E-5,v0=None,ncv=40)
+            e,v=eigsh(Hsparse,k=2,which='SA',maxiter=1000000,tol=1E-5,v0=None,ncv=40)
             t2=time.time()        
         
         if LAN==True:
